@@ -16,7 +16,8 @@ argv = require('optimist').usage('Compiles underscore.js templates into javascri
   c:
     alias: 'compile-style'
     describe: 'Options include: "combined" (single file), "directory" (one ' +
-              'file per directory) and "file" (one output file per input file)'
+              'file per directory) and "file" (one output file per input ' +
+              'file).'
     default: 'directory'
   e:
     alias: 'extension'
@@ -25,7 +26,24 @@ argv = require('optimist').usage('Compiles underscore.js templates into javascri
   n:
     alias: 'namespace'
     describe: 'The namespace to add your compiled template functions to.'
-    default: 'window'
+    default: 'App'
+  p:
+    alias: 'no-precompile'
+    describe: 'If true, underscore compilation of templates will happen at ' +
+              'runtime.'
+    default: false
+  v:
+    alias: 'underscore-variable'
+    describe: '_.template\'s `variable` option for performance optimization. '+
+              'See http://underscorejs.org/#template.'
+    default: 'data'
+  C:
+    alias: 'clean'
+    describe: 'Empty the out-dir before compiling.'
+  U:
+    alias: 'unsafe-clean'
+    describe: 'Opt out of prompt before cleaning out-dir'
+    default: false
 ).argv
 
 # Underscorify hyphenated keys
