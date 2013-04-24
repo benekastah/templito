@@ -1,43 +1,42 @@
 #!/usr/bin/env coffee
 
 path = require 'path'
-argv = process.argv.slice 2
+optimist = require('optimist')
 
-switch argv[0]
-  when null, undefined, '', '-h', '--help'
-    # Dislay the help message and quit
-    console.log """
-    Usage:
+argv = require('optimist').usage('Compiles underscore.js templates into javascript files.')
+.options(
+  s:
+    alias: 'source-dir'
+    describe: 'The directory where all your template files reside.'
+    demand: true
+  o:
+    alias: 'out-dir'
+    describe: 'The directory where _plate will put the compiled template files.'
+    default: '<source-dir>/_compiled'
+  c:
+    alias: 'compile-style'
+    describe: 'Options include: "combined" (single file), "directory" (one ' +
+              'file per directory) and "file" (one output file per input file)'
+    default: 'directory'
+  e:
+    alias: 'extension'
+    describe: '_plate will look for files with the given extension.'
+    default: 'html'
+  n:
+    alias: 'namespace'
+    describe: 'The namespace to add your compiled template functions to.'
+    default: 'window'
+).argv
 
-      plate <source_dir> [<out_dir> <file_level> <extension> <namespace>]
+# Underscorify hyphenated keys
+re_hyphen = /(\w*)\-(\w*)/g
+for key, value of argv
+  if re_hyphen.test key
+    _key = key.replace re_hyphen, '$1_$2'
+    argv[_key] = value
 
-      source_dir:           The directory where all your template files reside.
-                            REQUIRED.
-      out_dir:              The directory to put the compiled template files.
-                            Defaults to '<source_dir>/_compiled'.
-      file_level:           The level you want your files compiled to. 0 means
-                            you have one file for the whole directory. 1 means
-                            you have one file for each file or directory in
-                            the first level or tree. 2 is the same for the
-                            second level of your tree, and so on.
-      extension:            The extension of your template files. Defaults to
-                            'html'.
-      namespace:            The default namespace to add your templates to.
-                            Defaults to `window`. If your source_dir is called
-                            'templates', and you have a source file called
-                            'foo.html', you can access it at
-                            `<namespace>.Templates.foo`.
-
-    """
-    process.exit 0
-
-
-[source_dir, out_dir, file_level, extension, namespace] = argv
-out_dir or= path.join source_dir, '_compiled'
-file_level or= 1
-extension or= 'html'
-namespace or= 'window'
+# Make sure the out_dir default is within the context of source_dir
+argv.out_dir = argv.out_dir.replace /<source\-dir>/, argv.source_dir
 
 plate = require '../plate'
-options = {source_dir, out_dir, file_level, extension, namespace}
-plate.compile options
+plate.compile argv
