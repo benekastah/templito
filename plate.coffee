@@ -7,6 +7,17 @@ readline = require 'readline'
 try
   _ = require 'underscore'
 
+# Utility functions
+
+###
+# with_prompter creates a readline prompter on demand. Since the program won't
+# exit until each prompter is closed, it requires the prompter to be used in a
+# sort of "session".
+#
+# @param fn callback which takes two parameters:
+#   @param prompter the readline interface
+#   @param close the cleanup callback.
+###
 with_prompter = (fn) ->
   prompter = readline.createInterface
     input: process.stdin
@@ -14,19 +25,41 @@ with_prompter = (fn) ->
   fn prompter, ->
     prompter.close()
 
-re_trailing_path = /\/?$/
 
-
+###
+# mkdir -p
+#
+# @param dir the directory to make
+# @param cb the callback (called by child_process.exec)
+###
 mkdirp = (dir, cb) ->
   child_process.exec "mkdir -p #{JSON.stringify dir}", cb
 
 
+###
+# Recursively removes directories.
+#
+# @param dir the directory
+# @param force whether rm -rf should be used
+# @param cb a callback (called by child_process.exec)
+###
 rmdirr = (dir, force, cb) ->
   _dir = JSON.stringify dir
   _f = if force then 'f' else ''
   cmd = "if [ -d #{_dir} ]; then rm -r#{_f} #{_dir}; fi"
   child_process.exec cmd, cb
 
+
+###
+# group_cb is a quick 'n dirty async flow manager.
+#
+# @param cb a callback that will be called when the group is finished.
+#
+# @returns Function when called, this function creates a new callback for the
+# group. As soon as every callback in the group is called, the group is closed.
+# If this function is called again, it will recreate the internal callback
+# group and will continue to work properly.
+###
 group_cb = null
 do ->
   ee = new events.EventEmitter()
@@ -55,23 +88,54 @@ do ->
     ret
 
 
-
+###
+# Create a fake ENOTDIR Error a la nodejs.
+#
+# @param path path to the thing that isn't a directory
+# @returns Error ENOTDIR Error
+###
 notDirError = (path) ->
   err = new Error("Not a directory: #{JSON.stringify path}")
   err.path = path
   err.code = 'ENOTDIR'
+  err
 
 
+re_trailing_path = /\/?$/
 re_to_capital_case = /(^|[\-_\s])([a-z])/g
+
+
+###
+# Converts a name to capital case from a_name_like_this or a-name-like-this.
+#
+# @param name the thing you want to convert
+# @returns String the capital cased name
+###
 to_capital_case = (name) ->
   result = name.replace re_to_capital_case, (a, b, match) -> match.toUpperCase()
   result.replace re_trailing_path, ''
 
 
+###
+# Constructs a javascript object path. Used for taking path segments and
+# converting them to javascript namespaces.
+#
+# @param namespace the front of the object path
+# @param basename the next part of the object path
+# @returns a new object path
+###
 get_object_path = (namespace, basename) ->
   "#{namespace}.#{to_capital_case basename}"
 
 
+###
+# Takes a number of object paths and sets all the intermediate default values
+# so that each object in the path exists. Ensures that if two object paths are
+# the same, they will not be initialized more than once in the same call.
+#
+# @param object_paths... n number of object paths
+# @returns String javascript code to initialize the paths
+###
 default_object_paths = (object_paths...) ->
   defaults = []
   for object_path in object_paths
@@ -89,6 +153,14 @@ default_object_paths = (object_paths...) ->
   defaults.join '\n'
 
 
+###
+# Cleans the out_dir specified by the user. By clean, we mean totally remove.
+# The user will be prompted before we remove the compiled directory unless
+# they have turned the unsafe_clean option on.
+#
+# @param argv The arguments object from optimist
+# @param cb A callback for when the clean operation is done
+###
 clean_out_dir = (argv, cb) ->
   with_prompter (prompter, close) ->
     clean = (yn) ->
@@ -105,6 +177,12 @@ clean_out_dir = (argv, cb) ->
       )
 
 
+###
+# The main entry point from the cli _plate command. Does some basic sanity
+# checking, performs the clean if requested and passes the rest on to _compile.
+#
+# @param argv the optimist argv object.
+###
 @compile = (argv) ->
   {source_dir, out_dir, compile_style, extension, namespace} = argv
   stats_cb = group_cb ([err1], [err2]) ->
@@ -135,6 +213,18 @@ clean_out_dir = (argv, cb) ->
       out_cb(notDirError out_dir)
 
 
+###
+# This function recursively gathers information about the files and directory
+# structure so we can properly compile the template files. Ensures we only
+# compile files with the proper extension.
+#
+# @param source_dir The source dir we are compiling from.
+# @param out_dir The directory we are compiling to.
+# @param namespace The base namespace of the javascript object that will hold
+# the templates in the part of the directory tree we are looking at.
+# @param argv The original argv object from optimist
+# @param cb A callback
+###
 _compile = (source_dir, out_dir, namespace, argv, cb) ->
   results =
     items: []
@@ -193,6 +283,12 @@ warning_message = """
  *  all changes to this file will be lost!
  */
 """
+###
+# Takes the information gathered from _compile and performs the compile
+# operation. This function is supposed to respond to the compile_style option
+# in argv, but fails to do so properly. Currently the only option that works
+# is "directory".
+###
 _compile_with_branches = (data, object_path, argv, cb) ->
   # Get a copy of the callback that won't take any arguments
   cb = do (cb) ->
@@ -240,6 +336,8 @@ _compile_with_branches = (data, object_path, argv, cb) ->
               #{JSON.stringify info.data},
               null, #{JSON.stringify underscore_opts})
           """
+          # Precompile with underscore and include the source in the file
+          # rather than doing it at runtime.
           if _ and not argv.no_precompile
             template_fn = eval(template_fn).source
 
