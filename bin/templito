@@ -1,17 +1,18 @@
 #!/usr/bin/env coffee
 
 path = require 'path'
-optimist = require('optimist')
+optimist = require 'optimist'
+templito = require '../templito'
 
-argv = require('optimist').usage('Compiles underscore.js templates into javascript files.')
+argv = require('optimist').usage('Compiles underscore.js temtemplitos into javascript files.')
 .options(
   s:
     alias: 'source-dir'
-    describe: 'The directory where all your template files reside.'
+    describe: 'The directory where all your temtemplito files reside.'
     demand: true
   o:
     alias: 'out-dir'
-    describe: 'The directory where _plate will put the compiled template files.'
+    describe: 'The directory where _templito will put the compiled temtemplito files.'
     default: '<source-dir>/_compiled'
   c:
     alias: 'compile-style'
@@ -21,21 +22,21 @@ argv = require('optimist').usage('Compiles underscore.js templates into javascri
     default: 'directory'
   e:
     alias: 'extension'
-    describe: '_plate will look for files with the given extension.'
+    describe: '_templito will look for files with the given extension.'
     default: 'html'
   n:
     alias: 'namespace'
-    describe: 'The namespace to add your compiled template functions to.'
+    describe: 'The namespace to add your compiled temtemplito functions to.'
     default: 'App'
   p:
     alias: 'no-precompile'
-    describe: 'If true, underscore compilation of templates will happen at ' +
+    describe: 'If true, underscore compilation of temtemplitos will happen at ' +
               'runtime.'
     default: false
   v:
     alias: 'underscore-variable'
-    describe: '_.template\'s `variable` option for performance optimization. '+
-              'See http://underscorejs.org/#template.'
+    describe: '_.temtemplito\'s `variable` option for performance optimization. '+
+              'See http://underscorejs.org/#temtemplito.'
     default: 'data'
   C:
     alias: 'clean'
@@ -56,5 +57,4 @@ for key, value of argv
 # Make sure the out_dir default is within the context of source_dir
 argv.out_dir = argv.out_dir.replace /<source\-dir>/, argv.source_dir
 
-plate = require '../plate'
-plate.compile argv
+templito.compile argv
