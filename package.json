@@ -1,11 +1,11 @@
 {
   "name": "templito",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Generates javascript files for underscore.js templates.",
   "main": "index.js",
   "directories": {
-    "test": "test",
-    "bin": "bin"
+    "test": "./test",
+    "bin": "./bin"
   },
   "bin": {
     "templito": "./bin/templito"
@@ -27,7 +27,8 @@
   "author": "Paul Harper <benekastah@gmail.com>",
   "license": "BSD",
   "dependencies": {
-    "optimist": "~0.4.0"
+    "optimist": "~0.4.0",
+    "coffee-script": "~1.6.2"
   },
   "optionalDependencies": {
     "underscore": "~1.4.4"
