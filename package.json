@@ -1,0 +1,25 @@
+{
+  "name": "_plate",
+  "version": "0.0.0",
+  "description": "Generates javascript files for underscore.js templates.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/benekastah/_plate.git"
+  },
+  "keywords": [
+    "underscore",
+    "underscore.js",
+    "template",
+    "underscore",
+    "templates"
+  ],
+  "author": "Paul Harper <benekastah@gmail.com>",
+  "license": "BSD"
+}
