@@ -1,5 +1,5 @@
 {
-  "name": "_plate",
+  "name": "templito",
   "version": "0.0.0",
   "description": "Generates javascript files for underscore.js templates.",
   "main": "index.js",
@@ -8,14 +8,14 @@
     "bin": "bin"
   },
   "bin": {
-    "_plate": "./bin/_plate"
+    "templito": "./bin/templito"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/benekastah/_plate.git"
+    "url": "git://github.com/benekastah/templito.git"
   },
   "keywords": [
     "underscore",
@@ -27,7 +27,9 @@
   "author": "Paul Harper <benekastah@gmail.com>",
   "license": "BSD",
   "dependencies": {
-    "underscore": "~1.4.4",
     "optimist": "~0.4.0"
+  },
+  "optionalDependencies": {
+    "underscore": "~1.4.4"
   }
 }

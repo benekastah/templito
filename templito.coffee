@@ -6,6 +6,9 @@ events = require 'events'
 readline = require 'readline'
 try
   _ = require 'underscore'
+catch e
+  console.warn 'Underscore could not be loaded. Precompiling templates will '+
+               'not work until this problem is resolved.', e
 
 # Utility functions
 
