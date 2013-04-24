@@ -21,5 +21,8 @@
     "templates"
   ],
   "author": "Paul Harper <benekastah@gmail.com>",
-  "license": "BSD"
+  "license": "BSD",
+  "dependencies": {
+    "underscore": "~1.4.4"
+  }
 }
