@@ -188,6 +188,17 @@ clean_out_dir = (argv, cb) ->
 ###
 @compile = (argv) ->
   {source_dir, out_dir, compile_style, extension, namespace} = argv
+
+  if _ and argv.template_settings
+    try
+      _.templateSettings = _.extend(
+        eval("(#{argv.template_settings})")
+        _.templateSettings
+      )
+    catch e
+      console.warn '--template-settings not a valid javascript object'
+      console.error e
+
   stats_cb = group_cb ([err1], [err2]) ->
     throw err if (err = err1 or err2)
     argv.re_extension = new RegExp("\\.#{extension}$", 'i')
@@ -286,6 +297,9 @@ warning_message = """
  *  all changes to this file will be lost!
  */
 """
+re_file_opts = /^<!\-\-(\{.*?\})\-\->/m
+touched_files = {}
+
 ###
 # Takes the information gathered from _compile and performs the compile
 # operation. This function is supposed to respond to the compile_style option
@@ -320,29 +334,59 @@ _compile_with_branches = (data, object_path, argv, cb) ->
 
       write = ->
         out = path.join data.out_dir, "#{path.basename data.source_dir}.js"
+        out = path.normalize out
         console.log "writing #{JSON.stringify out} to file..."
         js_head += default_object_paths object_paths...
         js = js_head + '\n\n' + js_body
-        fs.appendFile out, js, {encoding: 'utf8'}, _cb()
+
+        # Determine if we need to append to this file or not
+        if touched_files[out]
+          write_fn = fs.appendFile
+        else
+          write_fn = fs.writeFile
+          touched_files[out] = yes
+        # write the file
+        write_fn out, js, {encoding: 'utf8'}, _cb()
+
         setup_defaults()
 
-      underscore_opts = {}
-      if argv.underscore_variable
-        underscore_opts.variable = argv.underscore_variable
+      if argv.template_settings
+        underscore_opts = _.templateSettings
+      else
+        underscore_opts = null
 
       for name, info of data.items then do (name, info) ->
         if info.type is 'file'
           object_paths.push object_path
 
-          template_fn = """
-          _.template(
-              #{JSON.stringify info.data},
-              null, #{JSON.stringify underscore_opts})
-          """
+          file_opts = (info.data.match(re_file_opts) or [])[1]
+          if file_opts
+            info.data = info.data.replace re_file_opts, ''
+            file_opts = eval "(#{file_opts})"
+          else
+            file_opts = null
+
           # Precompile with underscore and include the source in the file
           # rather than doing it at runtime.
           if _ and not argv.no_precompile
-            template_fn = eval(template_fn).source
+            template_fn = (_.template info.data, null, file_opts).source
+            console.log file_opts
+          else
+            # TODO The no_precompile path is broken because it tries to json
+            # encode the underscore options object, but RegExp objects won't
+            # json encode.
+            if underscore_opts
+              if file_opts
+                for key, val of underscore_opts
+                  file_opts[key] ?= val
+              else
+                file_opts = underscore_opts
+
+            template_fn = """
+            _.template(
+                #{JSON.stringify info.data},
+                null, #{JSON.stringify file_opts})
+            """
 
           js_body += """
           #{object_path}.#{info.name} = #{template_fn};
