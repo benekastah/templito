@@ -1,7 +1,7 @@
 #Templito
 ======
 
-Temp·li·to [temp - **lee** - toh]
+Temp·li·to [temp-<strong>lee</strong>-toh]
   1. *(noun)* A small underscore.js template precompiler.
   2. *(noun)* A template burrito.
 
