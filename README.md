@@ -1,9 +1,9 @@
 #Templito
 ======
 
-Temp·li·to [temp-**lee**-toh]
-  1 *(noun)* A small underscore.js template precompiler.
-  2 *(noun)* A template burrito.
+Temp·li·to [temp - **lee** - toh]
+  1. *(noun)* A small underscore.js template precompiler.
+  2. *(noun)* A template burrito.
 
 Generates javascript files for underscore.js templates.
 
