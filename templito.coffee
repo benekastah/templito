@@ -4,6 +4,7 @@ path = require 'path'
 child_process = require 'child_process'
 events = require 'events'
 readline = require 'readline'
+log = require('./util').log
 try
   _ = require 'underscore'
 catch e
@@ -75,7 +76,6 @@ do ->
     ->
       group.data[idx] = arguments
       group.updated += 1
-      #console.log group
       if group.updated is group.length
         group[event_name] = null
         ee.emit event_name, group.data...
@@ -169,7 +169,7 @@ clean_out_dir = (argv, cb) ->
     clean = (yn) ->
       close()
       if yn in [true, 'y', 'Y']
-        console.log "Cleaning out previously compiled files, if any."
+        log "Cleaning out previously compiled files, if any."
         rmdirr(argv.out_dir, false, cb)
     if argv.unsafe_clean
       clean true
@@ -180,6 +180,7 @@ clean_out_dir = (argv, cb) ->
       )
 
 
+touched_files = null
 ###
 # The main entry point from the cli _plate command. Does some basic sanity
 # checking, performs the clean if requested and passes the rest on to _compile.
@@ -189,6 +190,7 @@ clean_out_dir = (argv, cb) ->
 @compile = (argv) ->
   {source_dir, out_dir, compile_style, extension, namespace} = argv
 
+  touched_files = {}
   if _ and argv.template_settings
     try
       _.templateSettings = _.extend(
@@ -298,7 +300,6 @@ warning_message = """
  */
 """
 re_file_opts = /^<!\-\-(\{.*?\})\-\->/m
-touched_files = {}
 
 ###
 # Takes the information gathered from _compile and performs the compile
@@ -310,8 +311,6 @@ _compile_with_branches = (data, object_path, argv, cb) ->
   # Get a copy of the callback that won't take any arguments
   cb = do (cb) ->
     -> cb and cb()
-
-  #console.log data
 
   if not data.items.length
     cb()
@@ -335,7 +334,7 @@ _compile_with_branches = (data, object_path, argv, cb) ->
       write = ->
         out = path.join data.out_dir, "#{path.basename data.source_dir}.js"
         out = path.normalize out
-        console.log "writing #{JSON.stringify out} to file..."
+        log "writing #{JSON.stringify out} to file..."
         js_head += default_object_paths object_paths...
         js = js_head + '\n\n' + js_body
 
@@ -370,7 +369,6 @@ _compile_with_branches = (data, object_path, argv, cb) ->
           # rather than doing it at runtime.
           if _ and not argv.no_precompile
             template_fn = (_.template info.data, null, file_opts).source
-            console.log file_opts
           else
             # TODO The no_precompile path is broken because it tries to json
             # encode the underscore options object, but RegExp objects won't

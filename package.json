@@ -31,7 +31,8 @@
     "coffee-script": "~1.6.2"
   },
   "optionalDependencies": {
-    "underscore": "~1.4.4"
+    "underscore": "~1.4.4",
+    "node-watch": "~0.3.3"
   },
   "preferGlobal": true
 }
