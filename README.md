@@ -16,7 +16,7 @@ npm install -g templito
 For quick help:
 
 ```bash
-templito
+templito -h
 ```
 
 will bring up the help info:
