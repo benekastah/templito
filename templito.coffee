@@ -150,7 +150,7 @@ clean_out_dir = (argv, cb) ->
     clean = (yn) ->
       close()
       if yn in [true, 'y', 'Y']
-        console.log "Cleaning out previously compiled files, if any."
+        log "Cleaning out previously compiled files, if any."
         utilities.rmdirr(argv.out_dir, false, cb)
     if argv.unsafe_clean
       clean true

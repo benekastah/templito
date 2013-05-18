@@ -6,17 +6,21 @@
 App.Templates || (App.Templates = {});
 App.Templates.Bar || (App.Templates.Bar = {});
 
-App.Templates.Bar.baz = function(data){
+App.Templates.Bar.baz = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
 __p+='\n<div id=\'baz\'>\n  <h2>Baz</h2>\n</div>\n';
+}
 return __p;
 };
 
-App.Templates.Bar.gondolas = function(data){
+App.Templates.Bar.gondolas = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
 __p+='\n<ul>\n  <li><strong>I don\'t have anything to write</strong></li>\n  <li>'+
 ((__t=( data.something_interesting ))==null?'':__t)+
 '</li>\n</ul>\n';
+}
 return __p;
 };
 

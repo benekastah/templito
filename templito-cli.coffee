@@ -1,5 +1,7 @@
 path = require 'path'
 optimist = require 'optimist'
+watch = require 'node-watch'
+log = require('./util').log
 templito = require './'
 
 argv = require('optimist')
@@ -44,6 +46,10 @@ argv = require('optimist')
   h:
     alias: 'help'
     describe: 'Show this help message and exit.'
+  w:
+    alias: 'watch'
+    describe: 'Watch the source directory for changes and recompile the ' +
+              'templates when a change is detected.'
   C:
     alias: 'clean'
     describe: 'Empty the out-dir before compiling.'
@@ -83,5 +89,17 @@ if not (argv.source_dir and argv.out_dir)
 
 argv.source_dir_basename = path.basename argv.source_dir
 
-templito.compile argv
+compile = ->
+  log 'Compiling templates...'
+  templito.compile argv
+compile()
 
+if argv.watch
+  timeout = null
+  watch argv.source_dir, (filename) ->
+    out_dir_match = filename.match argv.out_dir
+    if not out_dir_match or out_dir_match.index isnt 0
+      console.log()
+      log "Detected a change in #{JSON.stringify filename}"
+      clearTimeout timeout
+      timeout = setTimeout compile, 500

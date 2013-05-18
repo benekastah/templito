@@ -13,8 +13,9 @@ __p+='\n\n<div id=\'foo\'>\n  <h2>Foo</h2>\n\n  <a href=\'/\'>Home</a>\n\n  <div
 return __p;
 };
 
-App.Templates.layout = function(data){
+App.Templates.layout = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
 __p+='<!doctype html>\n<html>\n  <head>\n    <title>'+
 ((__t=( data.title ))==null?'':__t)+
 '</title>\n  </head>\n\n  <body>\n    <header>\n      <h1>'+
@@ -22,6 +23,7 @@ __p+='<!doctype html>\n<html>\n  <head>\n    <title>'+
 '</h1>\n    </header>\n\n    <div id=\'content\'>\n      '+
 ((__t=( data.content ))==null?'':__t)+
 '\n    </div>\n\n    <footer>\n      &copy; 2013 Paul Harper\n    </footer>\n  </body>\n</html>\n';
+}
 return __p;
 };
 
