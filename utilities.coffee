@@ -130,7 +130,9 @@ to_camel_case = (name) ->
   result = result.charAt(0).toLowerCase() + result.substr(1)
 
 
-re_to_snake_case = /([a-z])([A-Z\-])/g
+re_to_snake_case = /([a-z])([A-Z])/g
+re_acronym_to_snake_case = /([A-Z]+)([A-Z])/g
+re_dash = /\-/g
 ###
 # Converts a name-like-this or a nameLikeThis or a NameLikeThis into a
 # name_like_this.
@@ -139,7 +141,10 @@ re_to_snake_case = /([a-z])([A-Z\-])/g
 # @returns String the snake-cased name
 ###
 to_snake_case = (name) ->
-  result = name.replace re_to_snake_case, '$1_$2'
+  replacer = '$1_$2'
+  result = name.replace re_to_snake_case, replacer
+  result = result.replace re_acronym_to_snake_case, replacer
+  result = result.replace re_dash, '_'
   trim_trailing_path result.toLowerCase()
 
 
@@ -167,5 +172,5 @@ to_snake_case = (name) ->
 # @returns String the new string
 ###
 @replace_extension = (name, ext, new_ext) ->
-  re_ext = new RegExp "#{ext}$", 'gi'
-  return name.replace ext, new_ext
+  re_ext = new RegExp "(\\#{ext})?$", 'gi'
+  name.replace re_ext, new_ext

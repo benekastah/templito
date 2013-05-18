@@ -33,7 +33,7 @@ argv = require('optimist')
     alias: 'keep-extension'
     describe: 'Whether or not the output files should keep the original ' +
               'file extension as part of its name.'
-    default: true
+    default: false
   n:
     alias: 'namespace'
     describe: 'The namespace to add your compiled template functions to.'
@@ -80,6 +80,8 @@ argv.source_dir = argv._[0]
 argv.out_dir = argv._[1]
 if not (argv.source_dir and argv.out_dir)
   show_help 'Missing required argument'
+
+argv.source_dir_basename = path.basename argv.source_dir
 
 templito.compile argv
 
