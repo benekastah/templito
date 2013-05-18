@@ -33,7 +33,7 @@ class OutFile
 
     # Make all the needed directories for this file.
     utilities.mkdirp path.dirname(@path), =>
-      @append true, @warning_message, =>
+      @write @warning_message, =>
         @ee.emit 'ready'
         @ready = true
     return undefined # to supress annoying vim warning
@@ -61,16 +61,24 @@ class OutFile
     @default_object_path object_path
     @append "#{name} = #{fn};\n\n", cb
 
-  append: (force, text, cb) ->
-    if arguments.length < 3
-      [text, cb, force] = arguments
+  append: (text, cb) ->
     do_append = =>
-      fs.appendFile @path, text, {encoding: 'utf8'}, cb or (err) ->
-        throw err if err
-    if force or @ready
+      fs.appendFile @path, text, {encoding: 'utf8'}, (err) ->
+        if err
+          utilities.error "Error appending to #{@path}"
+          throw err
+        cb and cb()
+    if @ready
       do_append()
     else
       @ee.once 'ready', do_append
+
+  write: (text, cb) ->
+    fs.writeFile @path, text, {encoding: 'utf8'}, (err) ->
+      if err
+        utilities.error "Error writing to #{@path}"
+        throw err
+      cb and cb()
 
 
 ###
@@ -117,7 +125,9 @@ class Template
 
   compile: (cb) ->
     fs.readFile @path, {encoding: 'utf8'}, (err, source) =>
-      throw err if err
+      if err
+        utilities.error "Error reading #{@path}"
+        throw err
 
       # Get local file-level settings, if any
       file_settings = source.match(@re_template_settings)
@@ -150,7 +160,7 @@ clean_out_dir = (argv, cb) ->
     clean = (yn) ->
       close()
       if yn in [true, 'y', 'Y']
-        log "Cleaning out previously compiled files, if any."
+        utilities.log "Removing #{argv.out_dir} prior to compiling..."
         utilities.rmdirr(argv.out_dir, false, cb)
     if argv.unsafe_clean
       clean true
@@ -167,23 +177,29 @@ clean_out_dir = (argv, cb) ->
 #
 # @param argv the optimist argv object.
 ###
-@compile = (argv) ->
-  {source_dir, out_dir, compile_style, extension, namespace} = argv
+compiling = false
+@compile = (argv, cb) ->
+  return false if compiling
+  compiling = true
+
+  OutFile.existing = {}
 
   stats_cb = utilities.group_cb ([err1], [err2]) ->
     throw err if (err = err1 or err2)
-    compile_dir argv.source_dir, argv
+    compile_dir argv.source_dir, argv, ->
+      compiling = false
+      cb and cb()
 
   cb1 = stats_cb()
-  srcstat = fs.stat source_dir, (err, stat) ->
+  srcstat = fs.stat argv.source_dir, (err, stat) ->
     throw err if err
     if not stat.isDirectory()
-      cb1(utilities.not_dir_error source_dir)
+      cb1(utilities.not_dir_error argv.source_dir)
     else
       cb1()
 
   out_cb = stats_cb()
-  out_dirstat = fs.stat out_dir, (err, stat) ->
+  out_dirstat = fs.stat argv.out_dir, (err, stat) ->
     if err
       if err.code is 'ENOENT'
         return out_cb()
@@ -196,7 +212,9 @@ clean_out_dir = (argv, cb) ->
       else
         out_cb()
     else
-      out_cb(utilities.not_dir_error out_dir)
+      out_cb(utilities.not_dir_error argv.out_dir)
+
+  true
 
 
 ###
@@ -209,17 +227,25 @@ clean_out_dir = (argv, cb) ->
 # @param cb A callback
 ###
 compile_dir = (source_dir, options, cb) ->
-  cb_group = utilities.group_cb cb
+  cb_group = utilities.group_cb ->
+    utilities.log "Done compiling source directory #{source_dir}"
+    cb and cb()
+
+  # setTimeout ->
+  #   utilities.log "Callbacks for #{source_dir}:", cb_group.count
+  # , 10
+
   fs.readdir source_dir, (err, contents) ->
     throw err if err
     for item in contents then do (item) ->
       itempath = path.join source_dir, item
-      _cb = cb_group()
       fs.stat itempath, (err, stat) ->
         throw err if err
         if stat.isDirectory()
+          _cb = cb_group()
           compile_dir itempath, options, _cb
         else if path.extname(item) is options.extension
+          _cb = cb_group()
           template = new Template itempath, options
           template.compile _cb
 

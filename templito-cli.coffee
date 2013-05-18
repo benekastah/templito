@@ -1,7 +1,7 @@
 path = require 'path'
 optimist = require 'optimist'
 watch = require 'node-watch'
-log = require('./util').log
+log = require('./utilities').log
 templito = require './'
 
 argv = require('optimist')
@@ -61,7 +61,7 @@ argv = require('optimist')
 show_help = (msg) ->
   optimist.showHelp()
   console.error msg if msg
-  process.exit msg ? 1 : 0
+  process.exit msg ? -1 : 0
 
 if argv.help
   show_help()
@@ -89,17 +89,26 @@ if not (argv.source_dir and argv.out_dir)
 
 argv.source_dir_basename = path.basename argv.source_dir
 
+timeout = null
+timeout_duration = 500
 compile = ->
-  log 'Compiling templates...'
-  templito.compile argv
+  log 'Trying to compile templates...'
+  result = templito.compile argv, ->
+    log 'Done.'
+  if not result
+    log "Compile job in progress."
+    timeout_compile()
 compile()
 
+timeout_compile = ->
+  clearTimeout timeout
+  log "Compiling in #{timeout_duration}ms..."
+  timeout = setTimeout compile, timeout_duration
+
 if argv.watch
-  timeout = null
   watch argv.source_dir, (filename) ->
     out_dir_match = filename.match argv.out_dir
     if not out_dir_match or out_dir_match.index isnt 0
       console.log()
       log "Detected a change in #{JSON.stringify filename}"
-      clearTimeout timeout
-      timeout = setTimeout compile, 500
+      timeout_compile()

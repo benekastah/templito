@@ -3,6 +3,15 @@ events = require 'events'
 child_process = require 'child_process'
 readline = require 'readline'
 
+
+logger = (logfn) ->
+  (args...) ->
+    console[logfn] "#{new Date()}  ", args...
+
+@log = logger 'log'
+@error = logger 'error'
+@warn = logger 'warn'
+
 ###
 # with_prompter creates a readline prompter on demand. Since the program won't
 # exit until each prompter is closed, it requires the prompter to be used in a
