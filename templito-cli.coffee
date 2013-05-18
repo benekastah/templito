@@ -3,32 +3,41 @@ optimist = require 'optimist'
 templito = require './'
 
 argv = require('optimist')
-.usage('Compiles underscore.js templates into javascript files. Takes ' +
-       'one required argument that represents the source directory of the ' +
-       'templates you want to compile.')
+.usage('Compiles underscore.js templates into javascript files.\n\n' +
+       'templito source-dir out-dir [options]')
 .options(
-  o:
-    alias: 'out-dir'
-    describe: 'The directory where _templito will put the compiled template files.'
-    default: '<source-dir>/_compiled'
   c:
     alias: 'compile-style'
     describe: 'Options include: "combined" (single file), "directory" (one ' +
               'file per directory) and "file" (one output file per input ' +
               'file).'
     default: 'directory'
+  p:
+    alias: 'path-case'
+    describe: 'The casing for the object path part of an output ' +
+              'function\'s address. If the template is ' +
+              'source_dir/a/b/c.html, then the object path part is ' +
+              'source_dir/a/b. Options include "camelCase", "CapitalCase", ' +
+              ' and "snake_case".'
+    default: 'CapitalCase'
+  f:
+    alias: 'function-case'
+    describe: 'The casing for the output function\'s name. Options are the ' +
+              'same as for the path-case option.'
+    default: 'camelCase'
   e:
     alias: 'extension'
-    describe: '_templito will look for files with the given extension.'
-    default: 'html'
+    describe: 'templito will look for files with the given extension.'
+    default: '.html'
+  k:
+    alias: 'keep-extension'
+    describe: 'Whether or not the output files should keep the original ' +
+              'file extension as part of its name.'
+    default: true
   n:
     alias: 'namespace'
     describe: 'The namespace to add your compiled template functions to.'
     default: 'App'
-  # p:
-  #   alias: 'no-precompile'
-  #   describe: 'If true, underscore compilation of templates will happen at ' +
-  #             'runtime.'
   s:
     alias: 'template-settings'
     describe: 'A javascript object that will override _.templateSettings.'
@@ -58,12 +67,19 @@ for key, value of argv
     _key = key.replace re_hyphen, '$1_$2'
     argv[_key] = value
 
-argv.source_dir = argv._[0]
-if not argv.source_dir
-  show_help 'Missing required argument'
+if argv.template_settings?
+  try
+    argv.template_settings = eval(argv.template_settings)
+  catch e
+    console.error "The template-settings you passed in " +
+                  "(#{argv.template_settings}) does not appear to be a " +
+                  "valid javascript object: #{e}"
+    process.exit -1
 
-# Make sure the out_dir default is within the context of source_dir
-argv.out_dir = argv.out_dir.replace /<source\-dir>/, argv.source_dir
+argv.source_dir = argv._[0]
+argv.out_dir = argv._[1]
+if not (argv.source_dir and argv.out_dir)
+  show_help 'Missing required argument'
 
 templito.compile argv
 
