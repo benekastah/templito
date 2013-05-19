@@ -140,7 +140,7 @@ class Template
       file_settings = source.match(@re_template_settings)
       if file_settings
         file_settings = file_settings[1]
-        eval("file_settings = #{file_settings}")
+        file_settings = eval("(#{file_settings});")
         # Remove this from the source so we don't get compile errors.
         source = source.replace @re_template_settings, ''
       # Get the full template_settings object

@@ -75,7 +75,7 @@ for key, value of argv
 
 if argv.template_settings?
   try
-    argv.template_settings = eval(argv.template_settings)
+    argv.template_settings = eval("(#{argv.template_settings});")
   catch e
     console.error "The template-settings you passed in " +
                   "(#{argv.template_settings}) does not appear to be a " +

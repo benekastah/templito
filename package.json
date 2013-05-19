@@ -1,6 +1,6 @@
 {
   "name": "templito",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Generates javascript files for underscore.js templates.",
   "main": "index.js",
   "directories": {
