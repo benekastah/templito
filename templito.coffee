@@ -109,14 +109,21 @@ class Template
     # Get rid of the source_dir from @path_parts
     path_parts = @path_parts.slice 1
 
-    # Find out the path to the file this template will be appended to
-    fpath = switch @options.compile_style
-      when 'file' then path.join path_parts.concat(@basename)...
-      when 'directory' then path.join path_parts...
-      when 'combined' then @path_parts[0]
+    # Get the path of the output file that should be used.
+    compile_style = @options.compile_style
+    loop
+      # Find out the path to the file this template will be appended to
+      fpath = switch compile_style
+        when 'file' then path.join path_parts.concat(@basename)...
+        when 'directory' then path.join path_parts...
+        when 'combined' then @path_parts[0]
 
-    if fpath is '.'
-      fpath = @options.source_dir_basename
+      # Paths directly in source_dir (no intermediate parent directories)
+      # Should be compiled with the style 'file' instead to avoid confusion.
+      if fpath is '.'
+        compile_style = 'file'
+        continue
+      break
 
     ext = (if @options.keep_extension then @options.extension else '') + '.js'
     fpath = utilities.replace_extension fpath, @options.extension, ext
@@ -145,7 +152,9 @@ class Template
       template_path = [@options.namespace].concat(@path_parts_cased,
           [@name]).join('.')
       # Write to file
-      @out_file.append_template template_path, template_fn.source, cb
+      @out_file.append_template template_path, template_fn.source, =>
+        utilities.log "#{@path} -> #{@out_file.path}"
+        cb and cb()
 
 ###
 # Cleans the out_dir specified by the user. By clean, we mean totally remove.
@@ -227,9 +236,7 @@ compiling = false
 # @param cb A callback
 ###
 compile_dir = (source_dir, options, cb) ->
-  cb_group = utilities.group_cb ->
-    utilities.log "Done compiling source directory #{source_dir}"
-    cb and cb()
+  cb_group = utilities.group_cb cb
 
   fs.readdir source_dir, (err, contents) ->
     throw err if err
