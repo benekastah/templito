@@ -1,6 +1,11 @@
 #!/bin/bash
 
-if [ $2 == "watch"]; then
+settings='
+{ evaluate: /<%([\s\S]+?)%>/g,
+  interpolate: /<%=!([\s\S]+?)%>/g,
+  escape: /<%=([\s\S]+?)%>/g }'
+
+if [ "$1" == "watch" ]; then
   watch="-w"
 fi
-templito ./templates ./js/templates -n Templito $watch
+templito ./template ./js/template -n Templito -s "$settings" $watch

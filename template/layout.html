@@ -1,0 +1,14 @@
+<!--{variable: 'data'}-->
+
+<header>
+  <h1>Templito</h1>
+  <nav>
+    <ul>
+      <% _.each(data.nav, function (item) { %>
+        <li><a href="<%=! encodeURI(item.href) %>"><%= item.name %></a></li>
+      <% }); %>
+    </ul>
+  </nav>
+</header>
+
+Moar stuff

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $2 == "watch" ]; then
+if [ "$1" == "watch" ]; then
   watch="-w"
 fi
-coffee -c ./coffee -o ./js $watch
+coffee $watch -o ./js -c ./coffee
