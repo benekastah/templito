@@ -231,10 +231,6 @@ compile_dir = (source_dir, options, cb) ->
     utilities.log "Done compiling source directory #{source_dir}"
     cb and cb()
 
-  # setTimeout ->
-  #   utilities.log "Callbacks for #{source_dir}:", cb_group.count
-  # , 10
-
   fs.readdir source_dir, (err, contents) ->
     throw err if err
     for item in contents then do (item) ->
