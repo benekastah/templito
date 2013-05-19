@@ -1,0 +1,22 @@
+#!/bin/bash
+
+./bin/coffee watch &
+export COFFEE_PID=$!
+function coffee-cleanup {
+  echo "Stopping coffee..."
+  kill $COFFEE_PID
+  unset COFFEE_PID
+}
+trap coffee-cleanup EXIT
+
+./bin/templito watch &
+export TEMPLITO_PID=$!
+function templito-cleanup {
+  echo "Stopping templito..."
+  kill $TEMPLITO_PID
+  unset TEMPLITO_PID
+}
+trap templito-cleanup EXIT
+
+./bin/serve
+

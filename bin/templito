@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ $2 == "watch"]; then
+  watch="-w"
+fi
+templito ./templates ./js/templates -n Templito $watch
