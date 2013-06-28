@@ -1,3 +1,0 @@
-
-@log = (args...) ->
-  console.log "#{new Date()}  ", args...
