@@ -183,3 +183,15 @@ to_snake_case = (name) ->
 @replace_extension = (name, ext, new_ext) ->
   re_ext = new RegExp "(\\#{ext})?$", 'gi'
   name.replace re_ext, new_ext
+
+
+re_leading_v = /^v/;
+###
+# Converts a versionstring to an array. 'v0.10.4' would become [0, 10, 4].
+#
+# @param version String The version string
+# @returns Array
+###
+@version_parts = (version) ->
+  +n for n in version.replace(re_leading_v, '').split('.')
+

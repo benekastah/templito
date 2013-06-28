@@ -63,7 +63,7 @@ class OutFile
 
   append: (text, cb) ->
     do_append = =>
-      fs.appendFile @path, text, {encoding: 'utf8'}, (err) ->
+      fs.appendFile @path, text, @file_options, (err) ->
         if err
           utilities.error "Error appending to #{@path}"
           throw err
@@ -74,7 +74,7 @@ class OutFile
       @ee.once 'ready', do_append
 
   write: (text, cb) ->
-    fs.writeFile @path, text, {encoding: 'utf8'}, (err) ->
+    fs.writeFile @path, text, @file_options, (err) ->
       if err
         utilities.error "Error writing to #{@path}"
         throw err
@@ -86,6 +86,9 @@ class OutFile
 ###
 class Template
   re_template_settings: /^\s*<!\-\-(\{[\s\S]+?\})\-\->/
+
+  node_version = utilities.version_parts(process.version)
+  file_options: if node_version[1] < 10 then 'utf8' else {encoding: 'utf8'}
 
   ###
   # @param path The path to the file from the base source directory.
@@ -131,7 +134,7 @@ class Template
     new OutFile path.join(@options.out_dir, fpath), @options
 
   compile: (cb) ->
-    fs.readFile @path, {encoding: 'utf8'}, (err, source) =>
+    fs.readFile @path, @file_options, (err, source) =>
       if err
         utilities.error "Error reading #{@path}"
         throw err
