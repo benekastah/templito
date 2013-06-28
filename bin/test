@@ -1,0 +1,3 @@
+#!/bin/bash
+
+bin/templito test/templates test/compiled_templates $@
