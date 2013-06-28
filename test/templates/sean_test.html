@@ -1,0 +1,15 @@
+<!--{
+  interpolate: /<@=(.+?)@>/g,
+  evaluate: /<@(.+?)@>/g
+}-->
+
+<@ _.each(shippingValues, function(shippingValue) { @>
+  <div class="fieldWrapper">
+    <input id="shipping-value-id-<@= shippingValue.id @>"
+        value="<@= shippingValue.id @>" type="radio" name="shippingValue"
+      <@ if (shippingValue.selected) { @> checked<@ } @>>
+    <label for="shipping-value-id-<@= shippingValue.id @>">
+      <@= shippingValue.formattedLabel @>
+    </label>
+  </div>
+<@ }); @>
