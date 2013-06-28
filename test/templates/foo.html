@@ -1,9 +1,9 @@
-<!--{variable: 'foo', interpolate: /<@=(.+?)@>/g}-->
+<!--{variable: 'foo', escape: /<@-(.+?)@>/g}-->
 
 <div id='foo'>
   <h2>Foo</h2>
 
   <a href='/'>Home</a>
 
-  <div><@= foo.home @></div>
+  <div><@- foo.home @></div>
 </div>
