@@ -85,7 +85,7 @@ class OutFile
 # @class Template
 ###
 class Template
-  re_template_settings: /^<!\-\-(\{.*?\})\-\->/m
+  re_template_settings: /^\s*<!\-\-(\{[\s\S]+?\})\-\->/
 
   ###
   # @param path The path to the file from the base source directory.
