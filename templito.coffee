@@ -29,6 +29,8 @@ class OutFile
     OutFile.existing[@path] = this
 
     @ee = new events.EventEmitter()
+    # Set more listeners than we'll need
+    @ee.setMaxListeners(5000);
     @defaulted_object_paths = []
 
     # Make all the needed directories for this file.

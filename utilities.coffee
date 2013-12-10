@@ -140,7 +140,7 @@ to_camel_case = (name) ->
 
 
 re_to_snake_case = /([a-z])([A-Z])/g
-re_acronym_to_snake_case = /([A-Z]+)([A-Z])/g
+re_acronym_to_snake_case = /([A-Z]+)([A-Z])(?=[a-z])/g
 re_dash = /\-/g
 ###
 # Converts a name-like-this or a nameLikeThis or a NameLikeThis into a
