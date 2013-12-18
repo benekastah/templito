@@ -153,11 +153,16 @@ class Template
           @options.template_settings, file_settings)
       # Compile the template function
       template_fn = _.template(source, null, template_settings)
+      if @options.template_wrapper
+        template_fn_source = @options.template_wrapper + '(' +
+          template_fn.source + ')'
+      else
+        template_fn_source = template_fn.source
       # Get full javascript path to compiled template
       template_path = [@options.namespace].concat(@path_parts_cased,
           [@name]).join('.')
       # Write to file
-      @out_file.append_template template_path, template_fn.source, =>
+      @out_file.append_template template_path, template_fn_source, =>
         utilities.log "#{@path} -> #{@out_file.path}"
         cb and cb()
 

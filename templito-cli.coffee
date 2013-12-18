@@ -56,6 +56,11 @@ argv = require('optimist')
   U:
     alias: 'unsafe-clean'
     describe: 'Opt out of prompt before cleaning out-dir'
+  d:
+    alias: 'template-wrapper'
+    describe: 'Provide a function to pass the compiled template to. ' +
+              'Useful if you need to process the result of an underscore ' +
+              'template function call for any reason.'
 ).argv
 
 show_help = (msg) ->
