@@ -40,7 +40,7 @@ class OutFile
         @ready = true
     return undefined # to supress annoying vim warning
 
-  default_object_path: (object_paths...) ->
+  default_object_path: (object_paths..., cb) ->
     defaults = []
     for object_path in object_paths
         parts = object_path.split '.'
@@ -56,12 +56,15 @@ class OutFile
             @defaulted_object_paths.push part
     defaults = defaults.join '\n'
     if defaults
-      @append defaults + '\n\n'
+      @append defaults + '\n\n', cb
+    else
+      cb(null)
 
   append_template: (name, fn, cb) ->
     object_path = name.split('.').slice(0, -1).join('.')
-    @default_object_path object_path
-    @append "#{name} = #{fn};\n\n", cb
+    @default_object_path object_path, (err) =>
+      throw err if err
+      @append "#{name} = #{fn};\n\n", cb
 
   append: (text, cb) ->
     do_append = =>
