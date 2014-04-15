@@ -28,16 +28,22 @@ class OutFile
     return existing if existing
     OutFile.existing[@path] = this
 
-    @ee = new events.EventEmitter()
-    # Set more listeners than we'll need
-    @ee.setMaxListeners(5000);
     @defaulted_object_paths = []
+
+    @queued_appends = []
+    run_queued_appends = =>
+      fn = null
+      while not fn and @queued_appends.length
+        fn = @queued_appends.shift()
+      if not fn
+        # end recursion
+        fn = => @ready = true
+      fn run_queued_appends
 
     # Make all the needed directories for this file.
     utilities.mkdirp path.dirname(@path), =>
       @write @warning_message, =>
-        @ee.emit 'ready'
-        @ready = true
+        run_queued_appends()
     return undefined # to supress annoying vim warning
 
   default_object_path: (object_paths..., cb) ->
@@ -67,16 +73,17 @@ class OutFile
       @append "#{name} = #{fn};\n\n", cb
 
   append: (text, cb) ->
-    do_append = =>
+    do_append = (next) =>
       fs.appendFile @path, text, @file_options, (err) ->
         if err
           utilities.error "Error appending to #{@path}"
           throw err
         cb and cb()
+        next and next()
     if @ready
       do_append()
     else
-      @ee.once 'ready', do_append
+      @queued_appends.push do_append
 
   write: (text, cb) ->
     fs.writeFile @path, text, @file_options, (err) ->
@@ -265,3 +272,4 @@ compile_dir = (source_dir, options, cb) ->
           template = new Template itempath, options
           template.compile _cb
 
+# vim: et sw=2 sts=2
