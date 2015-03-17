@@ -30,12 +30,13 @@
   "author": "Paul Harper <benekastah@gmail.com>",
   "license": "BSD",
   "dependencies": {
+    "coffee-script": "~1.9.1",
     "optimist": "~0.4.0",
-    "coffee-script": "~1.6.2"
+    "q": "^1.2.0"
   },
   "optionalDependencies": {
-    "underscore": "~1.4.4",
-    "node-watch": "~0.3.3"
+    "underscore": "~1.8.2",
+    "node-watch": "~0.3.4"
   },
   "preferGlobal": true
 }
