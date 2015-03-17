@@ -1,4 +1,6 @@
-
+Q = require 'q'
+path = require 'path'
+fs = require 'fs'
 events = require 'events'
 child_process = require 'child_process'
 readline = require 'readline'
@@ -8,8 +10,15 @@ logger = (logfn) ->
   (args...) ->
     console[logfn] "#{new Date()}  ", args...
 
+cb_promise = (func) -> (resolve, reject) ->
+  func (err, v) ->
+    if err
+      reject(err)
+    else
+      resolve(v)
+
 @log = logger 'log'
-@error = logger 'error'
+@error = logger 'trace'
 @warn = logger 'warn'
 
 ###
@@ -28,17 +37,51 @@ logger = (logfn) ->
   fn prompter, ->
     prompter.close()
 
-
+@question = (q) ->
+  prompter = readline.createInterface
+    input: process.stdin
+    output: process.stdout
+  Q.Promise (resolve, reject) ->
+    prompter.question q, (ans) ->
+      prompter.close()
+      val = yn in [true, 'y', 'Y']
+      resolve(val)
 ###
 # mkdir -p
 #
 # @param dir the directory to make
 # @param cb the callback (called by child_process.exec)
 ###
-@mkdirp = (dir, cb) ->
-  child_process.exec "mkdir -p #{JSON.stringify dir}", cb
+@mkdir = (dir) ->
+  Q.Promise cb_promise(fs.mkdir.bind(fs,dir))
 
+@mkdirp = (dir) =>
+  @mkdir dir
+  .catch (err) =>
+    switch err.code
+      when 'ENOENT'
+        @mkdirp path.dirname(dir)
+        .then () =>
+          @mkdir dir
+      when 'EEXIST'
+        Q.resolve()
+      else
+        Q.reject(err)
 
+@contents = (path, options) ->
+  Q.Promise cb_promise(fs.readFile.bind(fs, path, options))
+
+@append = (path, content, options) ->
+  Q.Promise cb_promise(fs.appendFile.bind(fs, path, content, options))
+
+@write = (path, text, options) ->
+  Q.Promise cb_promise(fs.writeFile.bind(fs, path, text, options))
+
+@open = (path, flags, mode) ->
+  Q.Promise cb_promise(fs.open.bind(fs, flags, mode))
+
+@stat = (path) ->
+  Q.Promise cb_promise(fs.stat.bind(fs, path))
 ###
 # Recursively removes directories.
 #
@@ -47,11 +90,19 @@ logger = (logfn) ->
 # @param cb a callback (called by child_process.exec)
 ###
 @rmdirr = (dir, force, cb) ->
-  _dir = JSON.stringify dir
-  _f = if force then 'f' else ''
-  cmd = "if [ -d #{_dir} ]; then rm -r#{_f} #{_dir}; fi"
-  child_process.exec cmd, cb
+  Q.Promise (resolve, reject) ->
+    _dir = JSON.stringify dir
+    _f = if force then 'f' else ''
+    cmd = "if [ -d #{_dir} ]; then rm -r#{_f} #{_dir}; fi"
+    child_process.exec cmd, (err) ->
+      if (err)
+        Q.reject(err)
+      else
+        Q.resolve()
 
+
+@readdir = (dir) ->
+  Q.Promise cb_promise(fs.readdir.bind(fs, dir))
 
 ###
 # group_cb is a quick 'n dirty async flow manager.

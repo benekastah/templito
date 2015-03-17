@@ -4,6 +4,7 @@ watch = require 'node-watch'
 log = require('./utilities').log
 templito = require './'
 
+# TODO remove optimist.  it's deprecated
 argv = require('optimist')
 .usage('Compiles underscore.js templates into javascript files.\n\n' +
        'templito source-dir out-dir [options]')
@@ -15,9 +16,9 @@ argv = require('optimist')
               'file).'
     default: 'directory'
   p:
-    alias: 'path-case'
+    alias: "path-case"
     describe: 'The casing for the object path part of an output ' +
-              'function\'s address. If the template is ' +
+              "function's address. If the template is " +
               'source_dir/a/b/c.html, then the object path part is ' +
               'source_dir/a/b. Options include "camelCase", "CapitalCase", ' +
               ' and "snake_case".'
@@ -61,6 +62,12 @@ argv = require('optimist')
     describe: 'Provide a function to pass the compiled template to. ' +
               'Useful if you need to process the result of an underscore ' +
               'template function call for any reason.'
+  F:
+    alias: 'footer'
+    describe: 'A file to append as a footer'
+  H:
+    alias: 'header'
+    describe: 'A file to append as a header'
 ).argv
 
 show_help = (msg) ->
@@ -80,7 +87,7 @@ for key, value of argv
 
 if argv.template_settings?
   try
-    argv.template_settings = eval("(#{argv.template_settings});")
+    argv.template_settings = eval "#{argv.template_settings};"
   catch e
     console.error "The template-settings you passed in " +
                   "(#{argv.template_settings}) does not appear to be a " +
@@ -98,11 +105,14 @@ timeout = null
 timeout_duration = 500
 compile = ->
   log 'Trying to compile templates...'
-  result = templito.compile argv, ->
+  templito.compile argv
+  .then () ->
     log 'Done.'
-  if not result
-    log "Compile job in progress."
-    timeout_compile()
+  .catch (err) ->
+    log err
+    if err.stack
+      log err.stack
+    throw err
 compile()
 
 timeout_compile = ->

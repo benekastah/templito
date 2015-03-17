@@ -1,3 +1,4 @@
 #!/usr/bin/env node
-require('coffee-script');
+var CoffeeScript = require('coffee-script');
+CoffeeScript.register();
 require('../templito-cli');
